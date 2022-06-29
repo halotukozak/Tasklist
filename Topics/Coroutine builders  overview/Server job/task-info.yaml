@@ -1,0 +1,14 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: |-
+    fun doAllTheJob() {
+        // put your code here
+        // use suspending functions
+        // connectToServer() and loadData()
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/13755#comment
+status: Solved
+record: -1

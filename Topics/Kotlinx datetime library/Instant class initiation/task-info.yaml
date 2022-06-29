@@ -1,0 +1,21 @@
+type: choice
+is_multiple_choice: true
+options:
+- text: val instant = "2023-01-01T20:00:00.1234Z".toInstant()
+- text: val instant = parseTime("2023-01-01T20:00:00.1234Z")
+- text: val instant = Clock.System.now()
+- text: val instant = Instant.toInstant("2023-01-01T20:00:00.1234Z")
+- text: val instant = Instant.parse("2023-01-01T20:00:00.1234Z")
+files:
+- name: src/Main.kt
+  visible: true
+  text: |
+    // You can experiment here, it won’t be checked
+
+    fun main(args: Array<String>) {
+      // put your code here
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19459#comment
+status: Solved
+record: -1

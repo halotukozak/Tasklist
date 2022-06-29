@@ -1,0 +1,21 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: 'It''s called by the first function when it''s ready '
+- text: It's called when the application finishes
+- text: 'It''s called in backward order: first sendToSever then prepareData'
+- text: It's called by the system when the first function finishes
+files:
+- name: src/Main.kt
+  visible: true
+  text: |
+    // You can experiment here, it won’t be checked
+
+    fun main(args: Array<String>) {
+      // put your code here
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/14505#comment
+status: Solved
+record: -1
+custom_name: What is callback?

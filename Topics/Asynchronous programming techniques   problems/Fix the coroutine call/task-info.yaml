@@ -1,0 +1,20 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: |-
+    suspend fun sendData() {
+        delay(1)
+        println("Success!")
+    }
+
+    // fix me, I want to call suspending function
+    fun main() {
+        // Call suspending function from the article with following signature:
+        // suspend fun sendData()
+        sendData()
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/14510#comment
+status: Solved
+record: -1

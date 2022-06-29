@@ -1,0 +1,17 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: |-
+    fun main() {
+        val numbersFilter = thread(block = {
+            //write your code here
+        })
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/16016#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Mon, 27 Jun 2022 12:24:26 UTC
+record: -1

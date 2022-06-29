@@ -1,0 +1,16 @@
+<h2>Orphan launched job</h2>
+<html>
+ <head></head>
+ <body>
+  <p>Let's connect to our server again but do a small mistake, so we can see how launched jobs can become orphans and never give us the expected result. There is a `connectToServer` function that fails to connect after a second or so, you can see that by launching the sample code.</p> 
+  <p>Your job is to change it to run the connection asynchronously and don't care about the result. After that, the program will finish successfully, which is good for the test, but in real life, it would be a problem because we do want to know about errors or results.</p> 
+  <p><button class="btn-sm btn-outline-secondary" onclick="getElementById('hint-618').style.display='inline'"> Hint </button> </p>
+  <div id="hint-618" style="display:none;">
+   Use `GlobalScope` as the receiver of `launch`
+  </div>
+  <p></p>
+ </body>
+</html><br><br><font color="gray">Memory limit: 256 MB</font><br><font color="gray">Time limit: 8 seconds</font><br><br>
+<b>Caution</b><br><br>
+You may see errors in your code or execution results due to missing context. Don’t worry about it, just write the solution and press Check.
+<br><br>

@@ -1,0 +1,20 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: It's when we pass the continuation function to the first function as an argument
+- text: It's when we use a coroutine
+- text: It's when we implement additional steps in our function
+files:
+- name: src/Main.kt
+  visible: true
+  text: |
+    // You can experiment here, it won’t be checked
+
+    fun main(args: Array<String>) {
+      // put your code here
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19676#comment
+status: Solved
+record: -1
+custom_name: What is Reactive extensions?

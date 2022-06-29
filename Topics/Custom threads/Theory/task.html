@@ -1,0 +1,175 @@
+<h2>Custom threads</h2>
+<html>
+ <head></head>
+ <body>
+  <p>As you remember from the previous topic, each program has at least one thread — the <strong>main thread</strong>. The main thread is a starting place from which you may spawn new threads to perform your tasks. To do that, you have to create your own threads, write code to be executed in a separate thread, and then start it.</p> 
+  <h5 id="create-custom-threads-with-inheritance" style="text-align: center;">Create custom threads with inheritance</h5> 
+  <p>Two primary ways to create a new thread that performs a task you need are the following:</p> 
+  <ul> 
+   <li>extending the <code class="language-kotlin">Thread</code> class and overriding its <code class="language-kotlin">run</code> method;</li> 
+  </ul> 
+  <ul> 
+   <li>implementing the <code class="language-kotlin">Runnable</code> interface and passing the implementation to the constructor of the <code class="language-kotlin">Thread</code> class.</li> 
+  </ul> 
+  <p>The code below gives an example of extending the <code class="language-kotlin">Thread</code> class and overriding its <code class="language-kotlin">run</code> method:</p> 
+  <pre><code class="language-kotlin">class HelloThread : Thread() {
+    override fun run() {
+        val helloMsg = "Hello, i'm $name"
+        println(helloMsg)
+    }
+}</code></pre> 
+  <p>And the following code shows how to implement the <code class="language-kotlin">Runnable</code> interface and pass the implementation to the constructor of the <code class="language-kotlin">Thread</code> class:</p> 
+  <pre><code class="language-kotlin">class HelloRunnable : Runnable {
+    override fun run() {
+        val threadName = Thread.currentThread().name
+        val helloMsg = "Hello, i'm $threadName"
+        println(helloMsg)
+    }
+}</code></pre> 
+  <p>In both cases, you should override the <code class="language-kotlin">run</code> method, which is a regular method and contains code to perform a task. Which approach to choose depends on the task and on your preferences. If you extend the <code class="language-kotlin">Thread</code> class, you can accept fields and methods of the base class but you cannot extend other classes, since Kotlin doesn't have multiple inheritance of classes. </p> 
+  <p>As you may know, the <code class="language-kotlin">Thread</code> class has a lot of constructors. You may find a full list <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/Thread.html#constructor_summary" rel="noopener noreferrer nofollow" target="_blank">here</a>. We will use some of them to demonstrate custom thread creation:</p> 
+  <pre><code class="language-kotlin">val t1 = HelloThread() // a subclass of Thread
+
+val t2 = Thread(HelloRunnable()) // passing runnable</code></pre> 
+  <p>And here's another way to specify the name of your thread by passing it to the constructor:</p> 
+  <pre><code class="language-kotlin">val myThread = Thread(HelloRunnable(), "my-thread")</code></pre> 
+  <p>If you want to specify the name of the thread in the <code class="language-kotlin">HelloThread</code> class, you should override the constructor. So, the <code class="language-kotlin">Runnable</code> interface provides you a more versatile way to work with threads.</p> 
+  <p>If you are already familiar with lambda expressions, you may do the whole thing like this:</p> 
+  <pre><code class="language-kotlin">val t3 = Thread {
+        println("Hello, i'm ${Thread.currentThread().name}")
+    }</code></pre> 
+  <h5 id="easy-way-to-create-a-thread" style="text-align: center;">Easy way to create a thread</h5> 
+  <p>But why do we need to implement an interface or extend a class to create an almost standard thread?</p> 
+  <p>You may create a thread with the function <code class="language-kotlin">thread(...): Thread</code>. In this case, the executing code is passed in the <code class="language-kotlin">block</code> argument:</p> 
+  <pre><code class="language-kotlin">import kotlin.concurrent.thread
+
+
+val t4 = thread(start = false, name = "Thread 4", block = {
+        println("Hello, I'm ${Thread.currentThread().name}")
+    })</code></pre> 
+  <p>This function may have a lot of parameters that will describe your custom thread:</p> 
+  <ul> 
+   <li><code class="language-kotlin">start</code> – if <code class="language-kotlin">true</code>, the thread is immediately started (then the thread will be created);</li> 
+   <li><code class="language-kotlin">isDaemon</code> – if <code class="language-kotlin">true</code>, the thread is created as a daemon thread (we will talk about them later);</li> 
+   <li><code class="language-kotlin">contextClassLoader</code> – a class loader for loading classes and resources in this thread (you will learn more about this later);</li> 
+   <li><code class="language-kotlin">name</code> – the name of the thread;</li> 
+   <li><code class="language-kotlin">priority</code> – the priority of the thread;</li> 
+   <li><code class="language-kotlin">block</code> – thread's execution code.</li> 
+  </ul> 
+  <p></p>
+  <div class="alert alert-primary">
+   The function 
+   <code class="language-kotlin">thread()</code> is from the 
+   <code class="language-kotlin">kotlin.concurrent</code> package, don't forget to import it!
+  </div> 
+  <p>Now you've created objects for threads, but you're not done yet. To perform the tasks you need, you'll have to start your thread.</p> 
+  <h5 id="starting-threads" style="text-align: center;">Starting threads</h5> 
+  <p>The class <code class="language-kotlin">Thread</code> has a method called <code class="language-kotlin">start()</code>, which is used to start a thread. At some point, after you invoke this method, the method <code class="language-kotlin">run</code> will be invoked automatically, but it won't happen immediately.</p> 
+  <p>Let's suppose that inside the <code class="language-kotlin">main</code> function, you create a thread named <code class="language-kotlin">t</code> using the <code class="language-kotlin">thread()</code> function and then start it.</p> 
+  <pre><code class="language-kotlin">fun main() {
+    val t = thread(start = false, block = {
+        println("Hello, I'm ${Thread.currentThread().name}")
+    })
+    t.start()
+}</code></pre> 
+  <p>Also, if you set the value of the <code class="language-kotlin">start</code> parameter to true (it's the default value), you can start the thread without invoking the method <code class="language-kotlin">start()</code>:</p> 
+  <pre><code class="language-kotlin">fun main() {
+    val t = thread(block = {
+        println("Hello, I'm ${Thread.currentThread().name}")
+    })
+}</code></pre> 
+  <p>Eventually, in both cases the result will be:</p> 
+  <pre><code class="language-no-highlight">Hello, i'm Thread-0</code></pre> 
+  <p>We've looked at how you can start a thread to run. Now, let's take a deeper look and see how starting a thread works from the inside.</p> 
+  <h5 id="thread-working" style="text-align: center;">Thread working</h5> 
+  <p>Here's a picture that explains how a thread actually starts and why it is not happening immediately.</p> 
+  <p> </p> 
+  <p style="text-align: center;"><img alt="" height="95px" src="https://ucarecdn.com/9dfe86a1-1880-4e14-9635-015d0091c70c/" width="373px"></p> 
+  <p> </p> 
+  <p>As you may see, there is some delay between starting a thread and the moment when it really starts working (running).</p> 
+  <p>By default, a new thread runs in the <strong>non-daemon</strong> mode. Reminder: the difference between the <strong>daemon</strong> and the non-daemon mode is that the JVM will not terminate a running program while there're still non-daemon threads left, while the daemon threads won't prevent the JVM from terminating. So, daemon threads usually do some background job.</p> 
+  <p></p>
+  <div class="alert alert-warning">
+   Do not confuse the methods 
+   <code class="language-kotlin">run</code> and 
+   <code class="language-kotlin">start</code>. You must invoke 
+   <code class="language-kotlin">start</code> if you'd like to execute your code inside 
+   <code class="language-kotlin">run</code> in another thread. If you invoke 
+   <code class="language-kotlin">run</code> directly, the code will be executed in the same thread.
+  </div> 
+  <p></p>
+  <div class="alert alert-warning">
+   If you try to start a thread more than once, 
+   <code class="language-kotlin">start</code> throws 
+   <code class="language-kotlin">IllegalThreadStateException</code>.
+  </div> 
+  <p>Despite the fact that within a single thread all statements are executed sequentially, it is impossible to determine the relative order of statements between multiple threads without additional measures that we will not consider in this lesson. </p> 
+  <p>Consider the following code:</p> 
+  <pre><code class="language-kotlin">fun main() {
+    val t1 = HelloThread()
+    val t2 = HelloThread()
+    t1.start()
+    t2.start()
+
+    println("Finished")
+}</code></pre> 
+  <p>The order of displaying messages may be different. Here is one example:</p> 
+  <pre><code class="language-no-highlight">Hello, i'm Thread-1
+Finished
+Hello, i'm Thread-0</code></pre> 
+  <p>It is even possible that all threads may print their text after the main thread prints <strong>"</strong>Finished<strong>":</strong></p> 
+  <pre><code class="language-no-highlight">Finished
+Hello, i'm Thread-0
+Hello, i'm Thread-1</code></pre> 
+  <p>This means that even though we call the <code class="language-kotlin">start</code> method sequentially for each thread, we do not know when the <code class="language-kotlin">run</code> method will be actually called.</p> 
+  <p></p>
+  <div class="alert alert-warning">
+    Do not rely on the order of execution of statements between different threads unless you've taken special measures.
+  </div> 
+  <h5 id="a-simple-multithreaded-program" style="text-align: center;">A simple multithreaded program</h5> 
+  <p>Let's consider a simple multithreaded program with two threads. The first thread reads numbers from the standard input and prints out their squares. At the same time, the main thread occasionally prints messages to the standard output. Both threads work simultaneously.</p> 
+  <p>Here is the thread that reads numbers in a loop and squares them. It has a break statement to stop the loop if the given number is 0.</p> 
+  <pre><code class="language-kotlin">class SquareWorkerThread(name: String) : Thread(name) {
+    override fun run() {
+        while (true) {
+            val number = readln().toInt()
+            if (number == 0) {
+                break
+            }
+            println(number * number)
+        }
+        println("$name's finished")
+    }
+}</code></pre> 
+  <p>Inside the <code class="language-kotlin">main</code> function, the program starts an object of the <code class="language-kotlin">SquareWorkerThread</code> class, which writes messages to the standard output from the main thread.</p> 
+  <pre><code class="language-kotlin">fun main() {
+    val workerThread = SquareWorkerThread("square-worker")
+    workerThread.start() // start a worker (not run!)
+
+    for (i in 0 until 5_555_555_543L) {
+        if (i % 1_000_000_000 == 0L) {
+            println("Hello from the main!")
+        }
+    }
+}</code></pre> 
+  <p>Here is an example of inputs and outputs with comments:</p> 
+  <pre><code class="language-java">Hello from the main!   // the program outputs it
+2                      // the program reads it
+4                      // the program outputs it
+Hello from the main!   // outputs it
+3                      // reads it
+9                      // outputs it
+5                      // reads it
+Hello from the main!   // outputs it
+25                     // outputs it
+0                      // reads it
+square-worker finished // outputs it
+Hello from the main!   // outputs it
+Hello from the main!   // outputs it
+
+Process finished with exit code 0</code></pre> 
+  <p>As you can see, this program performs two tasks <strong>"</strong>at the same time<strong>"</strong>:<strong> </strong>one in the main<strong> </strong>thread and the other one in the <strong>worker</strong> thread. It may not be <strong>"</strong>the same time<strong>"</strong> in the physical sense; however, both tasks are given some time to be executed.</p> 
+  <h5 id="conclusion" style="text-align: center;">Conclusion</h5> 
+  <p>In this topic, you've learned how to create an object of a thread, set the code which this thread should execute, and start the work of the thread. Also, you've found out how the thread works from the inside, as well as other important aspects of threads. We hope that this topic was useful, and now let's practice to better assimilate what we have learned!</p>
+ </body>
+</html>

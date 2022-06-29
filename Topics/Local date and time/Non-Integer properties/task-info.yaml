@@ -1,0 +1,27 @@
+type: choice
+is_multiple_choice: true
+options:
+- text: dayOfWeek
+- text: second
+- text: nanosecond
+- text: minute
+- text: month
+- text: monthNumber
+- text: year
+- text: dayOfYear
+- text: dayOfMonth
+- text: date
+- text: hour
+files:
+- name: src/Main.kt
+  visible: true
+  text: |
+    // You can experiment here, it won’t be checked
+
+    fun main(args: Array<String>) {
+      // put your code here
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19502#comment
+status: Solved
+record: -1

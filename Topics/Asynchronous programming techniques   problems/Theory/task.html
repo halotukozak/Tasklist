@@ -1,0 +1,67 @@
+<h2>Asynchronous programming techniques & problems</h2>
+<html>
+ <head></head>
+ <body>
+  <p> </p> 
+  <p>Users expect programs to be fast and responsive. Meanwhile, many operations are naturally slow and may require a lot of CPU, memory, disk, and network resources. The solution to that controversy is asynchronous programming: async programs are not sequential but rather react to events (e.g., when the computation is done, or a resource becomes available, or the user clicks a button). But there is a price to pay — async code is hard to wire and understand. Let's see what the most common approaches are.</p> 
+  <h5 id="problem-example-and-threads">Problem example and Threads</h5> 
+  <p>Assume this simple code sends some large piece of data to the Internet:</p> 
+  <pre><code class="language-kotlin">fun sendData() {
+    val data = prepareRequest() // long-running operation
+    val result = submitRequest(data) // another long-running operation
+    processResult(result)
+}</code></pre> 
+  <p>The <code class="language-kotlin">sendData</code> function has two long-running operations inside, so it's a long operation itself. If we call <code class="language-kotlin">sendData</code> from the main thread, it will completely block the UI until it's done, so one common solution is to run it on a separate parallel thread. However, now we need to deliver the result back to the main UI thread; moreover, threads consume extra memory, so we can create only a limited number of them. Delivering the result back to the main thread is not a trivial task either, and we won't get into such details here.</p> 
+  <h5 id="callbacks">Callbacks</h5> 
+  <p>A different solution is to let one function call another function back when it's done. We pass the continuation function to the first one as an argument. This argument is called a <strong>callback.</strong></p> 
+  <pre><code class="language-kotlin">fun sendData() {
+    // first call inside `sendData` is the same, it executes `prepareRequest` immediately
+    prepareRequest { data -&gt;
+        // code inside this lambda by convention will be executed by `prepareRequest` when it's done 
+        submitRequest(data) { result -&gt;
+            // another lambda is nested inside `submitRequest` and will be called when it's done
+            processResult(result)
+        }
+    }
+}</code></pre> 
+  <p>The last parameter of <code class="language-kotlin">prepareRequest</code> is now the <em>callback</em> lambda that calls the <code class="language-kotlin">submitRequest</code> function with prepared data as the first argument and another callback lambda that calls <code class="language-kotlin">processResult</code> as the last argument. When <code class="language-kotlin">prepareRequest</code> is done, it calls the given lambda, so does <code class="language-kotlin">submitRequest</code> when it's done. An important difference is that the top-level <code class="language-kotlin">sendData</code> function now returns immediately, and the nested code will be executed when the data is ready. So now we have a proper asynchronous code and the operations are executed when the data is ready. </p> 
+  <p>Note that this fairly simple code is already deeply nested and we don't even have error handling in place. In real life, this tends to grow out of control pretty fast. We can pass callback functions as parameters (callback lambdas are just parameters), but that obscures the logic of the code and also becomes messy when more than one operation is performed. </p> 
+  <pre><code class="language-kotlin">fun sendData() {
+    prepareRequest { data -&gt;
+        // `procressResult` callback can be passed directly if the input arguments match
+        // but we can't pass `submitRequest` the same to `prepareRequest` 
+        // because it doesn't know which callback `submitRequest` should call when done
+        // only root function `sendData` knows that 
+        submitRequest(::processResult)
+    }
+}</code></pre> 
+  <p>It would be much nicer if we could have the same async behavior expressed in a more linear way.</p> 
+  <h5 id="futures-and-reactive-extensions">Futures and Reactive extensions</h5> 
+  <p>There are multiple libraries and SDKs that do just that with so-called <a href="https://en.wikipedia.org/wiki/Futures_and_promises" rel="noopener noreferrer nofollow" target="_blank">Futures/Promises</a> or <a href="https://en.wikipedia.org/wiki/ReactiveX" rel="noopener noreferrer nofollow" target="_blank">Reactive Extensions</a> (we won't dive into details here, check out the links if you want to learn more). A typical promise code would look like that:</p> 
+  <pre><code class="language-kotlin">fun sendData() {
+    prepareRequest()
+        .thenCompose { data -&gt;  // this line means "excecute this lambda" when done without errors
+            submitRequest(data)
+        }
+        .thenAccept { result -&gt; // this is similar but also means it's the final operation
+            processResult(result)
+        }
+}</code></pre> 
+  <p>Now <code class="language-kotlin">submitRequest</code> and <code class="language-kotlin">processResult</code> are on the same level again (even if we still have an extra nesting), but we can now add more <code class="language-kotlin">then</code> steps in between without going deeper. It looks nicer, but it has its own problems: errors are still not easy to handle and traditional if/else and loops are not supported out of the box. RX libraries (<a href="http://www.rxjava.com/" rel="noopener noreferrer nofollow" target="_blank" title="http://www.rxjava.com">RxJava</a>, <a href="https://www.learnrxjs.io/" rel="noopener noreferrer nofollow" target="_blank" title="https://www.learnrxjs.io">RxJS</a>) partially solve that last problem by treating each result as a stream of values and providing a rich set of helper functions (called operators) to work with that stream, but that adds even more complexity. </p> 
+  <h5 id="coroutines-and-suspending-functions">Coroutines and Suspending functions</h5> 
+  <p>Here is where coroutines come into play. A <strong>coroutine</strong> may be thought of as a lightweight thread that performs <strong>suspendable</strong> computations. It means the function can suspend its execution on some blocking operation and resume later when the operation is done, just like with callbacks.</p> 
+  <pre><code class="language-kotlin">suspend fun sendData() {
+    val data = prepareRequest() // suspending function
+    val result = submitRequest(data) // also suspending function
+    processResult(result)
+}</code></pre> 
+  <p>Our example now looks exactly like in the beginning, except for the extra <code class="language-kotlin">suspend</code> keyword, which tells compile that this function may suspend itself.</p> 
+  <p></p>
+  <div class="alert alert-warning">
+    Only suspending functions can call other suspending functions. 
+  </div> 
+  <p>We can use all familiar keywords like <code class="language-kotlin">if</code>/<code class="language-kotlin">else</code>/<code class="language-kotlin">for</code>/<code class="language-kotlin">try</code>/<code class="language-kotlin">catch</code> again, but the main thread blocking is not an issue anymore. Moreover, this solution doesn't depend on any 3rd party library or even the platform anymore (it will work even with JS backend, which doesn't have threads), and the paradigm is very similar to the well-known goroutines (Go) or <code class="language-kotlin">async/await</code> (C# and others).</p> 
+  <h5 id="conclusion">Conclusion</h5> 
+  <p>Coroutines provide a way to perform async operations without changing the familiar imperative paradigm. The code stays readable, while the lightweight nature of coroutines allows us to start thousands of them when we need to without worrying about memory consumption.</p>
+ </body>
+</html>

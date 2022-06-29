@@ -1,0 +1,122 @@
+<h2>Coroutine builders: overview</h2>
+<html>
+ <head></head>
+ <body>
+  <p>As you remember, a regular non-suspending function cannot call a suspending function directly. At the same time, many types of applications start with regular functions, so how then can we use coroutines? The solution for this is coroutine builders.</p> 
+  <p>A <strong>coroutine builder</strong> is a function that takes a suspending function as its parameter and schedules its execution. The builder can be called from regular code, acting as a bridge between suspending and non-suspending planes. In this topic, we'll discuss the two most common builders and learn how to use them to perform suspending operations, both synchronously and asynchronously.</p> 
+  <h5 id="coroutines-usage">Coroutines usage</h5> 
+  <p>Let's say we need to perform some large operation that suspends in multiple places, for example, get a file from a server, save it to the disk, etc. At each step of this operation, we want to use coroutines to have concise code without callbacks, so we need to build a parent coroutine. We want to wait till the operation is complete before we can notify the user and finish the app.</p> 
+  <p>As we know, calling the suspending function directly won't work:</p> 
+  <pre><code class="language-kotlin">import kotlinx.coroutines.delay // kotlinx.coroutines is the primary package for coroutines
+
+// pretend we're busy here, there would be some long operation in real-life code
+// but delay() is a suspending function so it's a fair example
+suspend fun doLotsOfWorkWithFile(file: String) = delay(5_000)
+
+fun main() {
+    println("Preparing for hard work...")
+    doLotsOfWorkWithFile("a") // compilation error here !
+    println("Work is done!")
+}</code></pre> 
+  <p>To solve that problem, we can use the <a target="_blank" href="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/run-blocking.html" rel="noopener noreferrer nofollow" title="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/run-blocking.html">runBlocking</a> builder.</p> 
+  <h5 id="wait-for-suspending-code-runblocking">Wait for suspending code: <code class="language-kotlin">runBlocking</code></h5> 
+  <p><code class="language-kotlin">runBlocking</code> is a regular function that takes exactly one suspending function, executes it, waits until it finishes, and returns its result. This is exactly what we need in our situation! Let's give it a try:</p> 
+  <pre><code class="language-kotlin">import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+
+suspend fun doLotsOfWorkWithFile(file: String) = delay(5_000)
+
+fun main() {
+    runBlocking {                      // this lambda is our root suspending function
+        println("Starting coroutine.") // it can contain regular functions
+        doLotsOfWorkWithFile("a")      // and suspending functions as well
+    }
+    println("Work is done!")
+}</code></pre> 
+  <p>As you can see, our <code class="language-kotlin">main</code> function is not suspending, but now it compiles and runs properly: the delay between the two outputs is 5 seconds. We can say that we are waiting for the coroutine to finish in the regular code.</p> 
+  <p>Sometimes, all our code is potentially suspending. In that case, we can wrap everything with the <code class="language-kotlin">runBlocking</code> builder:</p> 
+  <pre><code class="language-kotlin">fun main() = runBlocking {         // here coroutine begins
+    println("Starting coroutine.")
+    doLotsOfWorkWithFile("a")
+    println("Work is done!")
+}                                  // here it ends</code></pre> 
+  <p>In fact, this is a common approach for simple apps or tests. But what if we need to do multiple independent operations, for example, receive two files from two different servers? We can still run them using blocking:</p> 
+  <pre><code class="language-kotlin">fun main() = runBlocking {
+    println("Starting coroutine")
+    doLotsOfWorkWithFile("a")   // there is no limit on how many suspending 
+    doLotsOfWorkWithFile("b")   // functions a suspending function can call
+    println("Work is done!")
+}</code></pre> 
+  <p>Does it work faster than regular code? No! Suspending functions are executed sequentially, and we're waiting for the whole coroutine to finish. It will take about 10 seconds. To launch different operations that can be suspended independently we can use another builder — <a target="_blank" href="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/launch.html" rel="noopener noreferrer nofollow" title="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/launch.html"><code class="language-kotlin">launch</code></a>.</p> 
+  <h5 id="fire-and-forget-launch">Fire and forget: <code class="language-kotlin">launch</code></h5> 
+  <p><code class="language-kotlin">launch</code> is similar to <code class="language-kotlin">runBlocking</code> in terms of syntax but has a different purpose: it does not wait for the coroutine to finish but immediately returns a special handler to the launched coroutine called a <a target="_blank" href="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html" rel="noopener noreferrer nofollow" title="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html">Job</a>. The coroutine itself continues working, but we can check the status or even cancel it through a <code class="language-kotlin">Job</code> object. We'll talk about scopes later, now we are using <code class="language-kotlin">GlobalScope</code> for example purposes only. Let's take a look:</p> 
+  <pre><code class="language-kotlin">import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+fun main() {
+    println("Starting")
+    val importantJob = GlobalScope.launch {
+        doLotsOfWorkWithFile("important_file") // waits for 5s
+        println("Important file processed")    // will only print after 5s
+    }
+    val notImportantJob = GlobalScope.launch {
+        doLotsOfWorkWithFile("optional_file")  // also waits 
+        println("Optional file processed")
+    }
+    println("Finishing")
+}                                              // exits immediately, not waiting for background jobs</code></pre> 
+  <p>This code will not print <code class="language-kotlin">Important file processed</code> or <code class="language-kotlin">Optional file processed</code> because <code class="language-kotlin">main</code> doesn't wait for the launched coroutines and returns immediately. The output would be:</p> 
+  <pre><code class="language-no-highlight">Starting
+Finishing</code></pre> 
+  <p>To wait for the result, we still need to block the main function:</p> 
+  <pre><code class="language-kotlin">fun main() {
+    println("Starting")
+    val importantJob = GlobalScope.launch {
+        doLotsOfWorkWithFile("important_file") // waits for 5s
+        println("Important file processed")
+    }
+    val notImportantJob = GlobalScope.launch {
+        delay(500)                            // add extra delay
+        doLotsOfWorkWithFile("optional_file") // so total wait is 5.5s
+        println("Optional file processed")
+    }
+    runBlocking {                             // block main until 6s delay is over
+        delay(6_000)                          // by this time both jobs should finish
+    }
+    println("Finishing")
+}</code></pre> 
+  <p>Now it will work as expected and print this:</p> 
+  <pre><code class="language-no-highlight">Starting
+Important file processed
+Optional file processed
+Finishing</code></pre> 
+  <p>Notice that we don't have to wait 10 seconds to get both files processed as we did with <code class="language-kotlin">runBlocking</code>. Moreover, if we decrease the wait time from 6s to 5.1s, the app will process the important file but not the optional one. In real life, we'd actually need to wait for a job to finish, not for a specific time, and we can do that with <span style="color: #000000;"><span style="background-color: #f3f4f6; font-size: 14.4px;">join()</span></span>.</p> 
+  <pre><code class="language-kotlin">fun main() {
+    println("Starting")
+    val importantJob = GlobalScope.launch {
+        doLotsOfWorkWithFile("important_file")
+        println("Important file processed")
+    }
+    val notImportantJob = GlobalScope.launch {
+        doLotsOfWorkWithFile("optional_file")
+        println("Optional file processed")
+    }
+    // we still have to use runBlocking because join() is a suspending function
+    runBlocking {
+        importantJob.join()  // join() suspends until the job is done
+    }
+    notImportantJob.cancel() // cancel non important job if it's not done yet
+    println("Finishing")
+}</code></pre> 
+  <p>With this approach, we can launch multiple independent operations simultaneously and wait for their results later, cancel them, or do something else. <code class="language-kotlin">Job</code> is a powerful tool here, and it provides way more features than we can discuss in this topic: we will consider it in another one, and meanwhile, you can check the <a target="_blank" href="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html" rel="noopener noreferrer nofollow" title="https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html">official documentation</a> to learn more.</p> 
+  <h5 id="conclusion">Conclusion</h5> 
+  <p>Let's recap what we know about coroutine builders:</p> 
+  <ul> 
+   <li>Builders can start coroutines from regular code. They bridge the gap between the regular and suspending functions.</li> 
+   <li>To wait for the result of the suspending code, use <code class="language-kotlin">runBlocking</code>.</li> 
+   <li>To run suspending code without having to wait for it to finish, use <code class="language-kotlin">launch</code>.</li> 
+   <li>To control the launched coroutine and check its status, use <code class="language-kotlin">Job</code> that <code class="language-kotlin">launch</code> returns.</li> 
+  </ul>
+ </body>
+</html>

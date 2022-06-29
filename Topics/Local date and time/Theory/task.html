@@ -1,0 +1,125 @@
+<h2>Local date and time</h2>
+<html>
+ <head></head>
+ <body>
+  <p>While the <code class="language-kotlin">Instant</code> class of the <code class="language-kotlin">kotlinx-datetime</code> library can be used for date and time handling as far as the UTC is concerned, but it can't handle regional time. For this reason, the library provides two classes named <code class="language-kotlin">LocalDateTime</code> and <code class="language-kotlin">LocalDate</code>. In this topic, you will learn how to initiate them and how to use them properly.</p> 
+  <h5 id="localdatetime-class">LocalDateTime class</h5> 
+  <p>The <code class="language-kotlin">LocalDateTime</code> class is used to represent date and time data for a certain time zone and can provide human-readable date and time components. It doesn't hold a specific moment in time (as the <code class="language-kotlin">Instant</code> class does), but identifies the time and date in a certain country or time zone.</p> 
+  <p><code class="language-kotlin">LocalDateTime</code> can be initiated from an <code class="language-kotlin">Instant</code> with the help of the <code class="language-kotlin">Instant</code> class <code class="language-kotlin">toLocalDateTime(timezone: Timezone)</code> member function, which takes a <code class="language-kotlin">Timezone</code> object as a parameter, as in the following example:</p> 
+  <pre><code class="language-kotlin">val dateTime: Instant = Instant.parse("2022-02-17T19:00:00Z")
+
+val tz: TimeZone = TimeZone.of("UTC+2")
+
+val local: LocalDateTime = dateTime.toLocalDateTime(tz)
+
+println(local)  // prints 2022-02-17T21:00</code></pre> 
+  <p>Additionally, a <code class="language-kotlin">LocalDateTime</code> object can be directly created with the <code class="language-kotlin">LocalDateTime</code> class constructors:</p> 
+  <pre><code class="language-kotlin">// The parameters are: Year, month, day, hour, minutes
+val dateTime1: LocalDateTime = LocalDateTime(2022, 2, 1, 17, 0)
+println(dateTime1)  // 2022-02-01T17:00
+
+// The parameters are: Year, month, day, hour, minutes, seconds
+val dateTime2: LocalDateTime = LocalDateTime(2022, 2, 1, 17, 0, 16)
+println(dateTime2)  // 2022-02-01T17:00:16
+
+// The parameters are: Year, month, day, hour, minutes, seconds, nanoseconds
+val dateTime3: LocalDateTime = LocalDateTime(2022, 2, 1, 17, 0, 16, 3456)
+println(dateTime3)  // 2022-02-01T17:00:16.000003456</code></pre> 
+  <p>It can be also created from an ISO 8601 string with the help of the <code class="language-kotlin">String</code> extension function <code class="language-kotlin">toLocalDateTime()</code>:</p> 
+  <pre><code class="language-kotlin">val dateTime4: LocalDateTime = "2022-02-22T22:10:00".toLocalDateTime()</code></pre> 
+  <p>Alternatively, you can use the <code class="language-kotlin">LocalDateTime.parse()</code> function with an ISO 8601 string as a parameter:</p> 
+  <pre><code class="language-kotlin">val dateTime5: LocalDateTime = LocalDateTime.parse("2022-01-01T12:30:00Z")</code></pre> 
+  <h5 id="localdate-class">LocalDate class</h5> 
+  <p>The <code class="language-kotlin">LocalDate</code> class is similar to the <code class="language-kotlin">LocalDateTime</code> class, the difference is that it holds only the local date information. It can be initiated directly, from an ISO 8601 string, or from <code class="language-kotlin">LocalDateTime</code> as follows:</p> 
+  <pre><code class="language-kotlin">// The parameters are: Year, month, day
+val date1: LocalDate = LocalDate(2022, 2, 1)
+println(date1)  // 2022-02-01
+
+val date2: LocalDate = "2000-01-01".toLocalDate()
+println(date2)  // 2000-01-01
+
+val date3: LocalDate = LocalDate.parse("2022-01-01")
+println(date3)  // 2022-01-01
+
+val datetime: LocalDateTime = LocalDateTime(2022, 1, 1, 12, 0)
+val date4: LocalDate = datetime.date
+println(date4))  // 2022-01-01
+
+// Get the current date at UTC+01:00
+val today: LocalDate = Clock.System.todayAt(TimeZone.of("UTC+1"))</code></pre> 
+  <h5 id="localdatetime-and-localdate-properties">LocalDateTime and LocalDate properties</h5> 
+  <p>Various date or time-specific data can be acquired from the <code class="language-kotlin">LocalDateTime</code> and <code class="language-kotlin">LocalDate</code> properties. Below you can see some examples of these properties; the property names are self-explanatory:</p> 
+  <pre><code class="language-kotlin">val dateTime: LocalDateTime = LocalDateTime(2023, 2, 1, 23, 22,21, 123456789)
+println(dateTime.year)        // 2023
+println(dateTime.month)       // FEBRUARY
+println(dateTime.monthNumber) // 2
+println(dateTime.dayOfYear)   // 32
+println(dateTime.dayOfWeek)   // WEDNESDAY
+println(dateTime.date)        // 2023-02-01
+println(dateTime.dayOfMonth)  // 1
+println(dateTime.hour)        // 23
+println(dateTime.minute)      // 22
+println(dateTime.second)      // 21
+println(dateTime.nanosecond)  // 123456789
+
+val date: LocalDate = LocalDate(2023, 2, 1)
+println(date.year)            // 2023
+println(date.month)           // FEBRUARY
+println(date.monthNumber)     // 2
+println(date.dayOfYear)       // 32
+println(date.dayOfWeek)       // WEDNESDAY
+println(date.dayOfMonth)      // 1</code></pre> 
+  <p>The <code class="language-kotlin">date</code> property is of <code class="language-kotlin">LocalDate</code> type, the <code class="language-kotlin">month</code> and <code class="language-kotlin">dayOfWeek</code> properties are <code class="language-kotlin">enum</code> class objects, while all the rest are integers.</p> 
+  <h5 id="localdate-and-localdatetime-operations">LocalDate and LocalDateTime operations</h5> 
+  <p><code class="language-kotlin">LocalDate</code> operations are similar to those of <code class="language-kotlin">Instant</code>. For example:</p> 
+  <pre><code class="language-kotlin">// Find difference in DateTimeUnit units
+val date1 = LocalDate(2022, 1, 1)
+val date2 = LocalDate(2022, 3, 1)
+println(date1.until(date2, DateTimeUnit.DAY))  // 59
+
+// Compare LocalDate objects
+if (date1 &gt; date2)
+    println(date1)
+else
+    println(date2)
+// 2022-03-01</code></pre> 
+  <p>In this case, the <code class="language-kotlin">until()</code> function only accepts the <code class="language-kotlin">DateTimeUnit</code> units that are multiples of a day.</p> 
+  <p>For <code class="language-kotlin">LocalDate</code>, we can get the help of the <code class="language-kotlin">DatePeriod</code> class, which is a subclass of the <code class="language-kotlin">DateTimePeriod</code> class and for which only the date- (and not time-) related properties have any significance. For example:</p> 
+  <pre><code class="language-kotlin">// periodUntil() function
+val date1 = LocalDate(2022, 1, 1)
+val date2 = LocalDate(2024, 3, 2)
+
+val period = date1.periodUntil(date2)
+
+println("Years: ${period.years} Months: ${period.months} Days: ${period.days}")
+// Years: 2 Months: 2 Days: 1</code></pre> 
+  <p>More examples:</p> 
+  <pre><code class="language-kotlin">// plus() and minus() functions
+val date = LocalDate(2000, 1, 1)
+println(date)
+// 2000-01-01
+
+val manyDays: DatePeriod = DatePeriod(days = 101)
+
+val after = date.plus(manyDays) // or val after = date + manyDays
+println(after)
+// 2000-04-11
+
+val before = date.minus(manyDays) // or val before = date - manyDays
+println(before)
+// 1999-09-22</code></pre> 
+  <p><code class="language-kotlin">LocalDateTime</code> arithmetic operations are purposefully left out due to the daylight saving time transitions. The library authors suggest doing all date and time arithmetic operations with the <code class="language-kotlin">Instant</code> class and converting to <code class="language-kotlin">LocalDateTime</code> only when needed.</p> 
+  <p>An <code class="language-kotlin">Instant</code> can be initiated from <code class="language-kotlin">LocalDateTime</code> with the help of the <code class="language-kotlin">LocalDateTime</code> class <code class="language-kotlin">toInstant(timezone: Timezone)</code> member function, which takes a <code class="language-kotlin">Timezone</code> object as a parameter, as in the following example:</p> 
+  <pre><code class="language-kotlin">val dateTime: LocalDateTime = LocalDateTime(2022, 1, 1, 0, 0,0)
+println(dateTime)
+// 2022-01-01T00:00
+
+val tz = TimeZone.of("Asia/Seoul")
+
+val instant = dateTime.toInstant(tz)
+println(instant)
+// 2021-12-31T15:00:00Z</code></pre> 
+  <h5 id="conclusion">Conclusion</h5> 
+  <p>In this topic, we've covered the basic elements of the <code class="language-kotlin">kotlinx-datetime</code> library dealing with local time. These can be used for handling most of the common issues concerning date and time data in your programs. However, this library has many more date- and time-related concepts and details for those who want to delve deeper into the matter.</p>
+ </body>
+</html>

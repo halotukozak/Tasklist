@@ -1,0 +1,20 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: |-
+    import kotlinx.coroutines.*
+    import kotlin.system.measureTimeMillis
+
+    fun doAllTheJob() {
+        // put your code here
+        // use suspending functions
+        // printProgress() and loadData()
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/13757#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Mon, 27 Jun 2022 10:17:10 UTC
+record: -1

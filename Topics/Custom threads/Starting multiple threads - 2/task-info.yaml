@@ -1,0 +1,16 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: "fun main() {\n    // create threads and start them using the class RunnableWorker\n\
+    \n}\n\n// Don't change the code below       \nclass RunnableWorker : Runnable\
+    \ {\n    override fun run() {\n        val name = Thread.currentThread().name\n\
+    \        if (name.startsWith(\"worker-\")) {\n            println(\"too hard calculations...\"\
+    )\n        } else {\n            return\n        }\n    }\n}"
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/16015#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Mon, 27 Jun 2022 12:11:46 UTC
+record: -1

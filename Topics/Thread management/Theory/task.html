@@ -1,0 +1,86 @@
+<h2>Thread management</h2>
+<html>
+ <head></head>
+ <body>
+  <p>We've already learned how to start a new thread by simply invoking the <code class="language-kotlin">start</code> method on a corresponding object. However, sometimes it is necessary to manage the lifecycle of a thread while it's working rather than just start it and leave it be.</p> 
+  <p>In this topic, we will consider two commonly used methods in multithreading programming: <code class="language-kotlin">sleep()</code> and <code class="language-kotlin">join()</code>. Both methods may throw an <code class="language-kotlin">InterruptedException</code>, which is omitted here for brevity.</p> 
+  <h5 id="sleeping" style="text-align: center;">Sleeping</h5> 
+  <p>The method <code class="language-kotlin">Thread.sleep()</code> causes the currently executing thread to suspend execution for the specified number of milliseconds. This is an efficient means of making processor time available for the other threads of an application or other applications that might be running on a computer.</p> 
+  <p>We will often use this method throughout our educational platform to simulate expensive calls and difficult tasks.</p> 
+  <pre><code class="language-kotlin">println("Started")
+
+Thread.sleep(2000) // suspend current thread for 2000 milliseconds
+         
+println("Finished")</code></pre> 
+  <p>Let's see what this code does. At first, it prints <strong>"</strong>Started<strong>"</strong>. Then, the current thread is suspended for 2000 milliseconds (it may be longer, but not less than indicated). Eventually, the thread wakes up and prints <strong>"</strong>Finished<strong>"</strong>.</p> 
+  <p>Another way to make the current thread sleep is to use the special class <code class="language-kotlin">TimeUnit</code> from the package <code class="language-kotlin">java.util.concurrent</code>:</p> 
+  <ul> 
+   <li><code class="language-kotlin">TimeUnit.MILLISECONDS.sleep(2000)</code> performs <code class="language-kotlin">Thread.sleep</code> for 2000 milliseconds;</li> 
+   <li><code class="language-kotlin">TimeUnit.SECONDS.sleep(2)</code> performs <code class="language-kotlin">Thread.sleep</code> for 2 seconds;</li> 
+  </ul> 
+  <p>There are more existing periods: <code class="language-kotlin">NANOSECONDS</code>, <code class="language-kotlin">MICROSECONDS</code>, <code class="language-kotlin">MILLISECONDS</code>, <code class="language-kotlin">SECONDS</code>, <code class="language-kotlin">MINUTES</code>, <code class="language-kotlin">HOURS</code>, and <code class="language-kotlin">DAYS</code>. For example:</p> 
+  <pre><code class="language-kotlin">import java.util.concurrent.TimeUnit
+
+println("Started")
+TimeUnit.SECONDS.sleep(2) // suspend current thread for 2 second
+println("Finished")</code></pre> 
+  <h5 id="joining" style="text-align: center;">Joining</h5> 
+  <p>The <code class="language-kotlin">join</code> method forces the current thread to wait for the completion of another thread on which the method was called. In the following example, the string <strong>"</strong>The end<strong>"</strong> will not be printed until the thread terminates.</p> 
+  <pre><code class="language-kotlin">fun main() {
+    val thread: Thread = thread(...)
+    println("The start")
+
+    thread.start() // start thread
+
+    println("Do something useful")
+
+    thread.join()  // waiting for thread to die
+
+    println("The end")
+}</code></pre> 
+  <p>The overloaded version of the <code class="language-kotlin">join</code> method takes the waiting time in milliseconds:</p> 
+  <pre><code class="language-kotlin">thread.join(2000)</code></pre> 
+  <p>This is used to avoid waiting for too long or even infinitely in case the thread is hung.</p> 
+  <p>Let's consider another example. The <code class="language-kotlin">Worker</code> class is developed to solve "a difficult task" simulated by the sleep:</p> 
+  <pre><code class="language-kotlin">class Worker : Thread() {
+    override fun run() {
+        println("Starting a task")
+        sleep(2000) // it solves a difficult task
+        println("The task is finished")
+    }
+}</code></pre> 
+  <p>Here is the <code class="language-kotlin">main</code> function where the <code class="language-kotlin">main</code> thread waits for the completion of <code class="language-kotlin">worker</code>.</p> 
+  <pre><code class="language-kotlin">fun main() {
+    val worker = Worker()
+    worker.start() // start the worker
+    Thread.sleep(100)
+    println("Do something useful")
+
+    worker.join(3000)  // waiting for the worker
+    println("The program stopped")
+}</code></pre> 
+  <p>The main thread waits for <code class="language-kotlin">worker</code> and cannot print the message <code class="language-kotlin">The program stopped</code> until <code class="language-kotlin">worker</code> terminates or the timeout is exceeded. We know exactly only that <code class="language-kotlin">Starting a task</code> precedes <code class="language-kotlin">The task is finished</code> and <code class="language-kotlin">Do something useful</code> precedes <code class="language-kotlin">The program stopped</code><strong>. </strong>There are several possible outputs.</p> 
+  <p>The first possible output (the task is completed before the timeout is exceeded):</p> 
+  <pre><code class="language-java">Starting a task
+Do something useful
+The task is finished
+The program stopped</code></pre> 
+  <p>The second possible output (the task is completed before the timeout is exceeded):</p> 
+  <pre><code class="language-java">Do something useful
+Starting a task
+The task is finished
+The program stopped</code></pre> 
+  <p>The third possible output:</p> 
+  <pre><code class="language-java">Do something useful
+Starting a task
+The program stopped
+The task is finished</code></pre> 
+  <p>The fourth possible output:</p> 
+  <pre><code class="language-java">Starting a task
+Do something useful
+The program stopped
+The task is finished</code></pre> 
+  <h5 id="conclusion" style="text-align: center;">Conclusion </h5> 
+  <p>In this topic, we've learned two useful methods <code class="language-kotlin">join</code> and <code class="language-kotlin">sleep</code>, which allow us to manage the lifecycle of a thread. Both methods may throw an <code class="language-kotlin">InterruptedException</code>, so be careful when using them. Let's practice our knowledge now! </p>
+ </body>
+</html>

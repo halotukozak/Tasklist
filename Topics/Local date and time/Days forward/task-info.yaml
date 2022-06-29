@@ -1,0 +1,25 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: |-
+    import kotlinx.datetime.*
+
+    fun daysForward(date: String, days: Int) {
+        // Write your code here
+
+        //
+    }
+
+    fun main() {
+        val date = readLine()!!
+        val days = readLine()!!.toInt()
+        daysForward(date, days)
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19504#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Sat, 25 Jun 2022 11:08:30 UTC
+record: -1

@@ -1,0 +1,20 @@
+type: choice
+is_multiple_choice: true
+options:
+- text: <code>LocalDateTime(2012, 7, 1, 21)</code>
+- text: <code>LocalDateTime(2021, 1, 1, 15, 12)</code>
+- text: <code>LocalDateTime(2000, 1, 1, 0, 0, 0, 0)</code>
+- text: <code>LocalDateTime(2022, 2, 1)</code>
+files:
+- name: src/Main.kt
+  visible: true
+  text: |
+    // You can experiment here, it won’t be checked
+
+    fun main(args: Array<String>) {
+      // put your code here
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19498#comment
+status: Solved
+record: -1
